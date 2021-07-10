@@ -10,5 +10,5 @@
 *.userosscache
 *.sln.docstates
 
-*/bin
-*/obj
+/MyToolsHelper/MyToolsHelper/bin
+/MyToolsHelper/MyToolsHelper/obj
