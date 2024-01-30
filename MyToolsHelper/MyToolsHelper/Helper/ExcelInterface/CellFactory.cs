@@ -12,22 +12,28 @@ namespace PPPayReportTools.ExcelInterface
     /// </summary>
     public class CellFactory
     {
-        private static Regex _CellPostionRegex = new Regex("[A-Z]+\\d+");
-        private static Regex _RowRegex = new Regex("\\d+");
+        private Regex _CellPostionRegex = new Regex("[A-Z]+\\d+");
+        private Regex _RowRegex = new Regex("\\d+");
+        private readonly ExcelHelper excelHelper;
+
+        public CellFactory(ExcelHelper excelHelper)
+        {
+            this.excelHelper = excelHelper;
+        }
 
         /// <summary>
         /// 通过Excel单元格坐标位置初始化对象
         /// </summary>
         /// <param name="excelCellPosition">A1,B2等等</param>
         /// <returns></returns>
-        public static ICellModel GetCellByExcelPosition(string excelCellPosition)
+        public ICellModel GetCellByExcelPosition(string excelCellPosition)
         {
             CellModel cellModel = null;
 
-            bool isMatch = CellFactory._CellPostionRegex.IsMatch(excelCellPosition);
+            bool isMatch = this._CellPostionRegex.IsMatch(excelCellPosition);
             if (isMatch)
             {
-                Match rowMath = CellFactory._RowRegex.Match(excelCellPosition);
+                Match rowMath = this._RowRegex.Match(excelCellPosition);
                 int rowPositon = Convert.ToInt32(rowMath.Value);
                 int rowIndex = rowPositon - 1;
                 int columnIndex = CellFactory.GetExcelColumnIndex(excelCellPosition.Replace(rowPositon.ToString(), ""));
@@ -91,12 +97,12 @@ namespace PPPayReportTools.ExcelInterface
 
         }
 
-        public static void SetDeepUpdateCellValue(ISheet sheet, int rowIndex, int columnIndex, object cellValue, string outputFormat, bool isCoordinateExpress, List<IExcelCellPointDeepUpdate> excelDeepUpdateList)
+        public void SetDeepUpdateCellValue(ISheet sheet, int rowIndex, int columnIndex, object cellValue, string outputFormat, bool isCoordinateExpress, List<IExcelCellPointDeepUpdate> excelDeepUpdateList)
         {
             if (sheet != null)
             {
                 //更新起始单元格数据
-                ICell nextCell = ExcelHelper.GetOrCreateCell(sheet, rowIndex, columnIndex);
+                ICell nextCell = this.excelHelper.GetOrCreateCell(sheet, rowIndex, columnIndex);
                 CellFactory.SetCellValue(nextCell, cellValue, outputFormat, isCoordinateExpress);
 
                 #region 执行单元格深度更新策略
@@ -116,7 +122,7 @@ namespace PPPayReportTools.ExcelInterface
                     //执行深度更新，一直到找不到下个单元格为止
                     do
                     {
-                        nextCell = ExcelHelper.GetOrCreateCell(sheet, nextCellPosition.RowIndex, nextCellPosition.ColumnIndex);
+                        nextCell = this.excelHelper.GetOrCreateCell(sheet, nextCellPosition.RowIndex, nextCellPosition.ColumnIndex);
                         if (nextCell != null)
                         {
                             CellFactory.SetCellValue(nextCell, cellValue, outputFormat, isCoordinateExpress);

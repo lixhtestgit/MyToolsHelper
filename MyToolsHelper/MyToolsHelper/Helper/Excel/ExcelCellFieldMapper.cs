@@ -5,30 +5,27 @@ using System.Reflection;
 
 namespace PPPayReportTools.Excel
 {
-    /// <summary>
-    /// 单元格字段映射类
-    /// </summary>
     internal class ExcelCellFieldMapper
     {
         /// <summary>
-        /// 属性信息(一个属性可以添加一个表达式读取，多个变量替换和多个坐标写入)
+        /// 属性信息
         /// </summary>
         public PropertyInfo PropertyInfo { get; set; }
 
         /// <summary>
-        /// 单元格—表达式读取（单元格坐标表达式（如：A1,B2,C1+C2...横坐标使用26进制字母，纵坐标使用十进制数字））
+        /// 该参数用于收集数据存于固定位置的单元格数据（单元格坐标表达式（如：A1,B2,C1+C2...横坐标使用26进制字母，纵坐标使用十进制数字））
         /// </summary>
-        public ExcelCellExpressReadAttribute CellExpressRead { get; set; }
+        public string CellCoordinateExpress { get; set; }
 
         /// <summary>
-        /// 单元格—模板文件的预定义变量写入（{A} {B}）
+        /// 该参数用于替换模板文件的预定义变量使用（{A} {B}）
         /// </summary>
-        public List<ExcelCellParamWriteAttribute> CellParamWriteList { get; set; }
+        public string CellParamName { get; set; }
 
         /// <summary>
-        /// 单元格—坐标位置写入（(0,0),(1,1)）
+        /// 字符输出格式（数字和日期类型需要）
         /// </summary>
-        public List<ExcelCellPointWriteAttribute> CellPointWriteList { get; set; }
+        public string OutputFormat { get; set; }
 
         /// <summary>
         /// 获取对应关系_T属性添加了单元格映射关系
@@ -40,21 +37,18 @@ namespace PPPayReportTools.Excel
             List<ExcelCellFieldMapper> fieldMapperList = new List<ExcelCellFieldMapper>(100);
 
             List<PropertyInfo> tPropertyInfoList = typeof(T).GetProperties().ToList();
-            ExcelCellExpressReadAttribute cellExpress = null;
-            List<ExcelCellParamWriteAttribute> cellParamWriteList = null;
-            List<ExcelCellPointWriteAttribute> cellPointWriteList = null;
+            ExcelCellAttribute cellExpress = null;
+
             foreach (var item in tPropertyInfoList)
             {
-                cellExpress = item.GetCustomAttribute<ExcelCellExpressReadAttribute>();
-                cellParamWriteList = item.GetCustomAttributes<ExcelCellParamWriteAttribute>().ToList();
-                cellPointWriteList = item.GetCustomAttributes<ExcelCellPointWriteAttribute>().ToList();
-                if (cellExpress != null || cellParamWriteList.Count > 0 || cellPointWriteList.Count > 0)
+                cellExpress = item.GetCustomAttribute<ExcelCellAttribute>();
+                if (cellExpress != null)
                 {
                     fieldMapperList.Add(new ExcelCellFieldMapper
                     {
-                        CellExpressRead = cellExpress,
-                        CellParamWriteList = cellParamWriteList,
-                        CellPointWriteList = cellPointWriteList,
+                        CellCoordinateExpress = cellExpress.CellCoordinateExpress,
+                        CellParamName = cellExpress.CellParamName,
+                        OutputFormat = cellExpress.OutputFormat,
                         PropertyInfo = item
                     });
                 }
